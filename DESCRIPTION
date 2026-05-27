@@ -1,0 +1,31 @@
+Package: CompMod
+Title: Comparable Company Analysis Tools for Valuation
+Version: 0.0.0.9000
+Authors@R: 
+    person("Jeb", "Dee", , "deej@lawrence.edu", role = c("aut", "cre"))
+Description: Provides tools for performing comparable company (comps) analysis,
+    a core valuation methodology in investment banking and equity research.
+    Functions support reading standardized valuation data from Excel, computing
+    key trading multiples, and summarizing peer group statistics to support
+    implied valuation ranges.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+Imports:
+    checkmate,
+    dplyr,
+    readxl,
+    rlang,
+    tibble
+Depends: 
+    R (>= 3.5)
+LazyData: true
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    writexl
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://adc-405-s26.github.io/CompMod/

@@ -1,0 +1,50 @@
+
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# CompMod
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+`CompMod` provides tools for performing *comparable company analysis (comps)*, a core valuation methodology in investment banking and equity research. The package covers the full workflow: reading standardised valuation data from Excel, computing key trading multiples, and summarising peer group statistics to support an implied valuation range.
+
+## Installation
+
+You can install the development version of `CompMod` from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("yourgithub/CompMod")
+```
+
+## Examples
+
+```{r setup}
+library(CompMod)
+```
+
+#### Compute trading multiples
+
+```{r}
+comps <- calc_multiples(valuation_data)
+comps[, c("Company.Name", "EV.Revenue", "EV.EBITDA", "P.E")]
+```
+
+#### Summarise the peer group
+
+```{r}
+peer_summary(comps)
+```

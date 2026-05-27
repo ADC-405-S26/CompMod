@@ -1,0 +1,110 @@
+---
+title: "Introduction to CompMod"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to CompMod}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Motivation
+
+Commonly called "comps," Comparable company analysis is one of the most widely used valuation methodologies in investment banking and equity research. The idea is straightforward: if you want to know what a private company or an acquisition target is worth, look at how the market is pricing similar public companies and apply those multiples to your target.
+
+In practice, however, building a comps model involves several repetitive steps: importing data from Excel, re-deriving multiples to verify them, and computing peer group statistics (mean, median, min, max) to set a valuation range. These steps are tedious, error-prone, and hard to reproduce.
+
+`CompMod` solves exactly this problem. It provides three focused functions that turn a raw Excel file of peer company data into a clean, reproducible comps analysis in just a few lines of R.
+
+## Installation
+
+```{r, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("yourgithub/CompMod")
+```
+
+Load the package:
+
+```{r setup}
+library(CompMod)
+```
+
+## The `valuation_data` dataset
+
+`CompMod` ships with a built-in dataset of 15 fictional technology companies, each with the financial metrics needed to run a comps analysis.
+
+```{r}
+head(valuation_data[, c("Company.Name", "Ticker", "Share.Price",
+                         "Enterprise.Value", "Revenue..LTM.", "EBITDA")])
+```
+
+The dataset contains `r nrow(valuation_data)` companies and `r ncol(valuation_data)` columns covering share price, capital structure metrics, income statement items, and pre-computed multiples.
+
+## Step 1 — Read your Excel file with `read_valuation_excel()`
+
+In a real workflow you would load your own Excel file. `read_valuation_excel()` reads the file, standardizes column names, and validates that all required columns and numeric fields are present before any analysis runs.
+
+```{r, eval = FALSE}
+df <- read_valuation_excel("path/to/your/valuation_data.xlsx")
+```
+
+If the file is missing required columns, the function stops immediately with a messages 
+
+## Step 2 — Compute multiples with `calc_multiples()`
+
+`calc_multiples()` takes the data frame and computes five trading multiples from first principles:
+
+| Multiple | Formula |
+|---|---|
+| EV/Revenue | Enterprise Value divided by LTM Revenue |
+| EV/EBITDA | Enterprise Value divided by EBITDA |
+| P/E | Share Price divided by EPS |
+| Price/Sales | Market Cap divided by LTM Revenue |
+| EBITDA Margin | EBITDA divided by LTM Revenue |
+
+```{r}
+comps <- calc_multiples(valuation_data)
+comps[, c("Company.Name", "EV.Revenue", "EV.EBITDA", "P.E", "EBITDA.Margin")]
+```
+
+## Step 3 — Summarise the peer group with `peer_summary()`
+
+The final step condenses the peer group multiples into a summary table of mean, median, min, and max. This is what an analyst uses to derive an implied valuation range for a target company.
+
+```{r}
+peer_summary(comps)
+```
+
+You can also pass a custom subset of multiples:
+
+```{r}
+peer_summary(comps, multiples = c("EV.Revenue", "EV.EBITDA"))
+```
+
+## Putting it all together
+
+Here is the full workflow from raw Excel to peer group summary in three lines:
+
+```{r, eval = FALSE}
+library(CompMod)
+
+df    <- read_valuation_excel("valuation_data.xlsx")
+comps <- calc_multiples(df)
+peer_summary(comps)
+```
+
+## Applying the results
+
+Once you have the peer group median multiples, you can apply them to a target company's financials. For example, if the peer group median EV/EBITDA is *12.0x* and your target's EBITDA is *$500M*:
+
+- Implied Enterprise Value = 12.0 x $500M = **$6,000M**
+- Subtract Net Debt to get Implied Equity Value
+- Divide by Shares Outstanding to get Implied Share Price
+
+`CompMod` gives you the summary statistics — the final step of applying them to a specific target is left to the analyst to ensure business context is properly considered.

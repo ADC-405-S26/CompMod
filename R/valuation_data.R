@@ -1,0 +1,31 @@
+#' Comparable company valuation dataset
+#'
+#' A dataset containing financial metrics and valuation multiples for 15
+#' fictional technology companies, designed to demonstrate the functions in
+#' the CompMod package. The data follows the structure of a standard
+#' comparable company analysis (comps) model as used in investment banking
+#' and equity research.
+#'
+#' @format ## `valuation_data`
+#' A data frame with 15 rows and 18 columns:
+#' \describe{
+#'   \item{Company.Name}{Name of the fictional company (character).}
+#'   \item{Ticker}{Stock ticker symbol (character).}
+#'   \item{Sector}{Industry sector — all companies are in Technology (character).}
+#'   \item{Share.Price}{Current share price in USD.}
+#'   \item{Shares.Outstanding}{Total shares outstanding in millions.}
+#'   \item{Market.Capitalization}{Market cap in millions USD.}
+#'   \item{Net.Debt}{Total debt minus cash in millions USD.}
+#'   \item{Enterprise.Value}{Enterprise value in millions USD.}
+#'   \item{Revenue..LTM.}{Last twelve months revenue in millions USD.}
+#'   \item{EBITDA}{Earnings before interest, taxes, depreciation and amortisation in millions USD.}
+#'   \item{Net.Income}{Net income in millions USD.}
+#'   \item{EPS}{Earnings per share in USD.}
+#'   \item{Revenue.Growth.YoY}{Year-over-year revenue growth rate as a decimal.}
+#'   \item{EBITDA.Margin}{EBITDA as a proportion of revenue.}
+#'   \item{P.E}{Price-to-earnings ratio.}
+#'   \item{EV.Revenue}{Enterprise Value divided by LTM Revenue.}
+#'   \item{EV.EBITDA}{Enterprise Value divided by EBITDA.}
+#'   \item{Net.Income.Margin}{Net Income as a proportion of revenue.}
+#' }
+"valuation_data"
