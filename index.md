@@ -1,20 +1,15 @@
 # CompMod
 
-`CompMod` provides tools for performing *comparable company analysis
-(comps)*, a core valuation methodology in investment banking and equity
-research. The package covers the full workflow: reading standardised
-valuation data from Excel, computing key trading multiples, and
-summarising peer group statistics to support an implied valuation range.
+CompMod is an R package for comparable company analysis (comps). It
+helps with reading valuation data from Excel, computing trading
+multiples, and summarizing peer group statistics.
 
 ## Installation
-
-You can install the development version of `CompMod` from
-[GitHub](https://github.com/) with:
 
 ``` r
 
 # install.packages("devtools")
-devtools::install_github("yourgithub/CompMod")
+devtools::install_github("ADC-405-S26/CompMod")
 ```
 
 ## Examples
@@ -22,6 +17,29 @@ devtools::install_github("yourgithub/CompMod")
 ``` r
 
 library(CompMod)
+```
+
+#### Read a valuation Excel file
+
+``` r
+
+tmp <- tempfile(fileext = ".xlsx")
+writexl::write_xlsx(valuation_data, tmp)
+df <- read_valuation_excel(tmp)
+head(df)
+#> # A tibble: 6 × 18
+#>   Company.Name     Ticker Sector     Share.Price Shares.Outstanding
+#>   <chr>            <chr>  <chr>            <dbl>              <dbl>
+#> 1 Xylo Dynamics    XYZ    Technology        48.2                500
+#> 2 Dogwood Systems  DOG    Technology        36.8                450
+#> 3 NovaGrid         NVG    Technology        29.6                600
+#> 4 BlueFox Software BFX    Technology        22.4                400
+#> 5 TitanCloud       TCL    Technology        62.2                700
+#> 6 Apex Data        APX    Technology        18.8                350
+#> # ℹ 13 more variables: Market.Capitalization <dbl>, Net.Debt <dbl>,
+#> #   Enterprise.Value <dbl>, Revenue..LTM. <dbl>, EBITDA <dbl>,
+#> #   Net.Income <dbl>, EPS <dbl>, Revenue.Growth.YoY <dbl>, EBITDA.Margin <dbl>,
+#> #   P.E <dbl>, EV.Revenue <dbl>, EV.EBITDA <dbl>, Net.Income.Margin <dbl>
 ```
 
 #### Compute trading multiples
@@ -63,4 +81,28 @@ peer_summary(comps)
 #> 3 P.E           17.4   18.1   12.1    27.4  
 #> 4 Price.Sales    1.82   1.51   0.430   5.61 
 #> 5 EBITDA.Margin  0.167  0.155  0.0657  0.316
+```
+
+#### Read a valuation Excel file
+
+``` r
+
+# install.packages("writexl")
+tmp <- tempfile(fileext = ".xlsx")
+writexl::write_xlsx(valuation_data, tmp)
+df <- read_valuation_excel(tmp)
+head(df)
+#> # A tibble: 6 × 18
+#>   Company.Name     Ticker Sector     Share.Price Shares.Outstanding
+#>   <chr>            <chr>  <chr>            <dbl>              <dbl>
+#> 1 Xylo Dynamics    XYZ    Technology        48.2                500
+#> 2 Dogwood Systems  DOG    Technology        36.8                450
+#> 3 NovaGrid         NVG    Technology        29.6                600
+#> 4 BlueFox Software BFX    Technology        22.4                400
+#> 5 TitanCloud       TCL    Technology        62.2                700
+#> 6 Apex Data        APX    Technology        18.8                350
+#> # ℹ 13 more variables: Market.Capitalization <dbl>, Net.Debt <dbl>,
+#> #   Enterprise.Value <dbl>, Revenue..LTM. <dbl>, EBITDA <dbl>,
+#> #   Net.Income <dbl>, EPS <dbl>, Revenue.Growth.YoY <dbl>, EBITDA.Margin <dbl>,
+#> #   P.E <dbl>, EV.Revenue <dbl>, EV.EBITDA <dbl>, Net.Income.Margin <dbl>
 ```

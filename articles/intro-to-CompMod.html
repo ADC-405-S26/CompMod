@@ -66,27 +66,30 @@
 <div class="section level2">
 <h2 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
 </h2>
-<p>Commonly called “comps,” Comparable company analysis is one of the
-most widely used valuation methodologies in investment banking and
-equity research. The idea is straightforward: if you want to know what a
-private company or an acquisition target is worth, look at how the
-market is pricing similar public companies and apply those multiples to
-your target.</p>
-<p>In practice, however, building a comps model involves several
-repetitive steps: importing data from Excel, re-deriving multiples to
-verify them, and computing peer group statistics (mean, median, min,
-max) to set a valuation range. These steps are tedious, error-prone, and
-hard to reproduce.</p>
-<p><code>CompMod</code> solves exactly this problem. It provides three
-focused functions that turn a raw Excel file of peer company data into a
-clean, reproducible comps analysis in just a few lines of R.</p>
+<p>Comparable company analysis, commonly called comps, is one of the
+most widely used valuation methods in investment banking and equity
+research. The core idea is straightforward. If you want to estimate what
+a company is worth, you look at how the market is currently pricing
+similar public companies and apply those pricing ratios to your target.
+The logic is that companies operating in the same industry with similar
+financial profiles should trade at similar multiples.</p>
+<p>In practice, building a comps model involves several repetitive and
+error prone steps. An analyst must import raw financial data from Excel,
+verify and recalculate valuation multiples from first principles, and
+then summarize those multiples across the peer group to establish a
+valuation range. Each of these steps takes time and introduces
+opportunities for mistakes.</p>
+<p>CompMod was built to handle exactly this workflow. It provides three
+focused functions that take a raw Excel file of peer company data and
+produce a clean, reproducible comps analysis in just a few lines of R
+code.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"yourgithub/CompMod"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"ADC-405-S26/CompMod"</span><span class="op">)</span></span></code></pre></div>
 <p>Load the package:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://adc-405-s26.github.io/CompMod/">CompMod</a></span><span class="op">)</span></span></code></pre></div>
@@ -94,9 +97,11 @@ clean, reproducible comps analysis in just a few lines of R.</p>
 <div class="section level2">
 <h2 id="the-valuation_data-dataset">The <code>valuation_data</code> dataset<a class="anchor" aria-label="anchor" href="#the-valuation_data-dataset"></a>
 </h2>
-<p><code>CompMod</code> ships with a built-in dataset of 15 fictional
-technology companies, each with the financial metrics needed to run a
-comps analysis.</p>
+<p>CompMod ships with a built in dataset of 15 fictional technology
+companies. Each company has the financial metrics needed to run a full
+comps analysis. The dataset is designed to mirror the structure of a
+real comparable company analysis model as used in investment banking and
+equity research.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">valuation_data</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Company.Name"</span>, <span class="st">"Ticker"</span>, <span class="st">"Share.Price"</span>,</span>
 <span>                         <span class="st">"Enterprise.Value"</span>, <span class="st">"Revenue..LTM."</span>, <span class="st">"EBITDA"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
@@ -107,28 +112,55 @@ comps analysis.</p>
 <span><span class="co">#&gt; 4 BlueFox Software    BFX       22.40          12835.0         11800   1240</span></span>
 <span><span class="co">#&gt; 5       TitanCloud    TCL       62.15          47380.0         11800   3360</span></span>
 <span><span class="co">#&gt; 6        Apex Data    APX       18.75          10437.5         11800    910</span></span></code></pre></div>
-<p>The dataset contains 15 companies and 18 columns covering share
-price, capital structure metrics, income statement items, and
-pre-computed multiples.</p>
+<p>The dataset contains 15 companies and 18 columns. Those columns cover
+share price, capital structure metrics like enterprise value and net
+debt, and income statement items like revenue, EBITDA, net income, and
+earnings per share.</p>
 </div>
 <div class="section level2">
 <h2 id="step-1-read-your-excel-file-with-read_valuation_excel">Step 1 — Read your Excel file with
 <code>read_valuation_excel()</code><a class="anchor" aria-label="anchor" href="#step-1-read-your-excel-file-with-read_valuation_excel"></a>
 </h2>
-<p>In a real workflow you would load your own Excel file.
-<code><a href="../reference/read_valuation_excel.html">read_valuation_excel()</a></code> reads the file, standardizes column
-names, and validates that all required columns and numeric fields are
-present before any analysis runs.</p>
+<p><code><a href="../reference/read_valuation_excel.html">read_valuation_excel()</a></code> is the entry point for any
+analysis using your own data. The function does three things in
+sequence.</p>
+<p>First it reads your Excel file into R using the readxl package.
+Second it standardizes all column names so they are safe to work with in
+R. For example a column called “Share Price” in your Excel file becomes
+<code>Share.Price</code> in R. Third it validates the data by checking
+that all required columns are present and that key financial columns
+contain numeric values rather than text or blank cells.</p>
+<p>This validation step is important. If your Excel file is missing a
+required column or contains non-numeric entries in a financial field,
+the function stops immediately and returns an error message that tells
+you exactly what needs to be fixed. This means you catch data problems
+before they silently affect your analysis downstream.</p>
+<p>The required columns are: <code>Company.Name</code>,
+<code>Ticker</code>, <code>Sector</code>, <code>Share.Price</code>,
+<code>Shares.Outstanding</code>, <code>Market.Capitalization</code>,
+<code>Net.Debt</code>, <code>Enterprise.Value</code>,
+<code>Revenue..LTM.</code>, <code>EBITDA</code>,
+<code>Net.Income</code>, <code>EPS</code>,
+<code>Revenue.Growth.YoY</code>, and <code>EBITDA.Margin</code>. Your
+Excel file must follow this structure for the function to work
+correctly.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_valuation_excel.html">read_valuation_excel</a></span><span class="op">(</span><span class="st">"path/to/your/valuation_data.xlsx"</span><span class="op">)</span></span></code></pre></div>
-<p>If the file is missing required columns, the function stops
-immediately with a messages</p>
+<code class="sourceCode R"><span><span class="co"># install.packages("writexl")</span></span>
+<span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span>
+<span><span class="fu">writexl</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/writexl//reference/write_xlsx.html" class="external-link">write_xlsx</a></span><span class="op">(</span><span class="va">valuation_data</span>, <span class="va">tmp</span><span class="op">)</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_valuation_excel.html">read_valuation_excel</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-2-compute-multiples-with-calc_multiples">Step 2 — Compute multiples with <code>calc_multiples()</code><a class="anchor" aria-label="anchor" href="#step-2-compute-multiples-with-calc_multiples"></a>
 </h2>
-<p><code><a href="../reference/calc_multiples.html">calc_multiples()</a></code> takes the data frame and computes five
-trading multiples from first principles:</p>
+<p><code><a href="../reference/calc_multiples.html">calc_multiples()</a></code> takes a validated data frame and
+calculates five core trading multiples from the underlying financial
+data. Rather than pulling pre-calculated values from your spreadsheet,
+the function derives each multiple independently. This ensures the
+numbers are consistent and reproducible regardless of what was entered
+in the original Excel file.</p>
+<p>The five multiples and their formulas are:</p>
 <table class="table">
 <thead><tr class="header">
 <th>Multiple</th>
@@ -149,7 +181,7 @@ trading multiples from first principles:</p>
 </tr>
 <tr class="even">
 <td>Price/Sales</td>
-<td>Market Cap divided by LTM Revenue</td>
+<td>Market Capitalization divided by LTM Revenue</td>
 </tr>
 <tr class="odd">
 <td>EBITDA Margin</td>
@@ -178,14 +210,21 @@ trading multiples from first principles:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> PixelWorks            1.21      14.1   18.1        0.085<span style="text-decoration: underline;">6</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> RapidWare             1.66      14.1   19.5        0.118 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> SkyVault              2.21      12.6   18.7        0.175</span></span></code></pre></div>
+<p>The function also handles edge cases. If any denominator value is
+zero it returns a warning so you know which multiples may be unreliable.
+If a value is missing the function propagates the NA rather than
+silently dropping it.</p>
 </div>
 <div class="section level2">
 <h2 id="step-3-summarise-the-peer-group-with-peer_summary">Step 3 — Summarise the peer group with
 <code>peer_summary()</code><a class="anchor" aria-label="anchor" href="#step-3-summarise-the-peer-group-with-peer_summary"></a>
 </h2>
-<p>The final step condenses the peer group multiples into a summary
-table of mean, median, min, and max. This is what an analyst uses to
-derive an implied valuation range for a target company.</p>
+<p><code><a href="../reference/peer_summary.html">peer_summary()</a></code> takes the output of
+<code><a href="../reference/calc_multiples.html">calc_multiples()</a></code> and condenses it into a summary table. For
+each multiple it returns the mean, median, minimum, and maximum across
+the peer group. This summary table is the core output of a comps
+analysis. An analyst uses the median multiples to derive an implied
+valuation range for a target company.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/peer_summary.html">peer_summary</a></span><span class="op">(</span><span class="va">comps</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
@@ -196,7 +235,8 @@ derive an implied valuation range for a target company.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> P.E           17.4   18.1   12.1    27.4  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Price.Sales    1.82   1.51   0.430   5.61 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> EBITDA.Margin  0.167  0.155  0.065<span style="text-decoration: underline;">7</span>  0.316</span></span></code></pre></div>
-<p>You can also pass a custom subset of multiples:</p>
+<p>You can also summarize a specific subset of multiples by passing a
+character vector to the <code>multiples</code> argument:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/peer_summary.html">peer_summary</a></span><span class="op">(</span><span class="va">comps</span>, multiples <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EV.Revenue"</span>, <span class="st">"EV.EBITDA"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
@@ -204,12 +244,16 @@ derive an implied valuation range for a target company.</p>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> EV.Revenue  2.15   1.83 0.758  5.93</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> EV.EBITDA  12.6   12.6  9.37  18.8</span></span></code></pre></div>
+<p>By default the function removes NA values before computing each
+statistic. You can change this behavior by setting
+<code>na.rm = FALSE</code> if you want NA values to propagate through
+the summary.</p>
 </div>
 <div class="section level2">
 <h2 id="putting-it-all-together">Putting it all together<a class="anchor" aria-label="anchor" href="#putting-it-all-together"></a>
 </h2>
-<p>Here is the full workflow from raw Excel to peer group summary in
-three lines:</p>
+<p>The full workflow from raw Excel file to peer group summary takes
+three lines of code:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://adc-405-s26.github.io/CompMod/">CompMod</a></span><span class="op">)</span></span>
 <span></span>
@@ -220,20 +264,17 @@ three lines:</p>
 <div class="section level2">
 <h2 id="applying-the-results">Applying the results<a class="anchor" aria-label="anchor" href="#applying-the-results"></a>
 </h2>
-<p>Once you have the peer group median multiples, you can apply them to
-a target company’s financials. For example, if the peer group median
-EV/EBITDA is <em>12.0x</em> and your target’s EBITDA is
-<em>$500M</em>:</p>
-<ul>
-<li>Implied Enterprise Value = 12.0 x $500M =
-<strong>$6,000M</strong>
-</li>
-<li>Subtract Net Debt to get Implied Equity Value</li>
-<li>Divide by Shares Outstanding to get Implied Share Price</li>
-</ul>
-<p><code>CompMod</code> gives you the summary statistics — the final
-step of applying them to a specific target is left to the analyst to
-ensure business context is properly considered.</p>
+<p>Once you have the peer group summary you can apply the median
+multiples to a target company’s financials to estimate its value. For
+example, if the peer group median EV/EBITDA is 12.0x and your target
+company has EBITDA of $500 million, the implied enterprise value is
+$6,000 million. From there you subtract net debt to get implied equity
+value, then divide by shares outstanding to get an implied share
+price.</p>
+<p>CompMod produces the peer group statistics that make this calculation
+possible. The final step of applying those statistics to a specific
+target is left to the analyst, since that judgment requires business
+context that goes beyond what the data alone can provide.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
