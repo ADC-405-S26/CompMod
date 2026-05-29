@@ -1,4 +1,3 @@
-
 ---
 output: github_document
 ---
@@ -19,21 +18,28 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-`CompMod` provides tools for performing *comparable company analysis (comps)*, a core valuation methodology in investment banking and equity research. The package covers the full workflow: reading standardised valuation data from Excel, computing key trading multiples, and summarising peer group statistics to support an implied valuation range.
+CompMod is an R package for comparable company analysis (comps). It helps with reading valuation data from Excel, computing trading multiples, and summarizing peer group statistics.
 
 ## Installation
 
-You can install the development version of `CompMod` from [GitHub](https://github.com/) with:
-
-``` r
+```r
 # install.packages("devtools")
-devtools::install_github("yourgithub/CompMod")
+devtools::install_github("ADC-405-S26/CompMod")
 ```
 
 ## Examples
 
 ```{r setup}
 library(CompMod)
+```
+
+#### Read a valuation Excel file
+
+```{r}
+tmp <- tempfile(fileext = ".xlsx")
+writexl::write_xlsx(valuation_data, tmp)
+df <- read_valuation_excel(tmp)
+head(df)
 ```
 
 #### Compute trading multiples
@@ -48,3 +54,16 @@ comps[, c("Company.Name", "EV.Revenue", "EV.EBITDA", "P.E")]
 ```{r}
 peer_summary(comps)
 ```
+
+
+
+#### Read a valuation Excel file
+
+```{r}
+# install.packages("writexl")
+tmp <- tempfile(fileext = ".xlsx")
+writexl::write_xlsx(valuation_data, tmp)
+df <- read_valuation_excel(tmp)
+head(df)
+```
+
